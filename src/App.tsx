@@ -10,6 +10,15 @@ import { Diagnoses, Patient } from "./types";
 import PatientListPage from "./PatientListPage";
 import PatientViewPage from "./PatientViewPage";
 import { Typography } from "@material-ui/core";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+
+const themeLight = createTheme({
+  palette: {
+    background: {
+      default: "#e7ebf0"
+    }
+  }
+});
 
 const App = () => {
   const [, dispatch] = useStateValue();
@@ -45,17 +54,20 @@ const App = () => {
     <div className="App">
       <Router>
         <Container>
-          <Typography variant="h3" style={{ marginBottom: "0.5em" }}>
-            Patientor
-          </Typography>
-          <Button component={Link} to="/" variant="contained" color="primary">
-            Home
-          </Button>
-          <Divider hidden />
-          <Routes>
-            <Route path="/" element={<PatientListPage />} />
-            <Route path="/patient/:id" element={<PatientViewPage />} />
-          </Routes>
+          <ThemeProvider theme={themeLight}>
+            <CssBaseline/>
+            <Typography variant="h3" style={{ marginBottom: "0.5em" }}>
+              Patientor
+            </Typography>
+            <Button component={Link} to="/" variant="contained" color="primary">
+              Home
+            </Button>
+            <Divider hidden />
+            <Routes>
+              <Route path="/" element={<PatientListPage />} />
+              <Route path="/patient/:id" element={<PatientViewPage />} />
+            </Routes>
+          </ThemeProvider>
         </Container>
       </Router>
     </div>

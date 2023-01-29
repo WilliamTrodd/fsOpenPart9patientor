@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CardContent, Typography } from "@material-ui/core";
+import { CardContent, Typography, Button } from "@material-ui/core";
 import Card from "@material-ui/core/Card";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import axios from "axios";
 import React from "react";
 import { useParams } from "react-router-dom";
+import AddEntryModal from "../AddEntryModal";
+import { EntryFormValues } from "../AddEntryModal/AddEntryForm";
+
 import Entry from "../components/EntryView";
 import { apiBaseUrl } from "../constants";
-import { currentPatient, useStateValue } from "../state";
+import { currentPatient, modifyPatient, useStateValue } from "../state";
 import { Diagnoses, Patient } from "../types";
 
 //import axios from "axios";
@@ -18,6 +21,15 @@ const PatientViewPage = () => {
   const [{patient, diagnoses}, dispatch] = useStateValue();
   const { id } = useParams<{id: string}>();
 
+  const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string>();
+
+  const openModal = (): void => setModalOpen(true);
+
+  const closeModal = (): void => {
+    setModalOpen(false);
+    setError(undefined);
+  };
   
   React.useEffect(() => {
 
@@ -46,6 +58,23 @@ const PatientViewPage = () => {
     display: 'inline-block'
   };
 
+  const submitEntry = async (values: EntryFormValues) => {
+    try{
+      const {data: updatedPatient} = await axios.post<Patient>(
+        `${apiBaseUrl}/patients/${id as string}/entries`,
+        values
+      );
+      console.log(values);
+      dispatch(modifyPatient(updatedPatient));
+    } catch (e: unknown) {
+      if(axios.isAxiosError(e)) {
+        console.log(e?.response?.data || "Unrecognized axios error");
+      } else {
+        console.log('Unknown error', e);
+      }
+    }
+  };
+
   return(
     <div>
       <Card style={cardStyle}>
@@ -57,8 +86,16 @@ const PatientViewPage = () => {
       </Card>
       <Typography variant="h6">Entries</Typography>
       <div style={{display: 'flex', flexDirection:'column'}}>
-      {patient.entries.map(e => <Entry key={e.id} entry={e} diagnoses={diagnoses}/>)}
+      {patient.entries.map(e => <Entry key={e.id} entry={e}/>)}
       </div>
+      <AddEntryModal 
+        modalOpen={modalOpen} 
+        onSubmit={submitEntry} 
+        onClose={closeModal} 
+        error={error}/>
+        <Button variant="contained" onClick={() => openModal()}>
+          Add new entry
+        </Button>
     </div>
   );
 };
